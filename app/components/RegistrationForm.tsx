@@ -5,7 +5,7 @@ import React, { useRef, useState } from "react";
 type FieldKey = "name" | "age" | "gender";
 
 const fieldPrompts: Record<FieldKey, string> = {
-  name: "Please say your full name",
+  name: "Please Say  your name",
   age: "Please say your age",
   gender: "Please say your gender, for example male or female",
 };
