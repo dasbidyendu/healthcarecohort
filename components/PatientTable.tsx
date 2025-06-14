@@ -1,72 +1,41 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import React from "react";
 
-type Patient = {
+interface Patient {
   id: string;
   name: string;
   age: number;
   gender: string;
   phone: string;
   createdAt: string;
-};
+}
 
-export default function PatientTable() {
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [loading, setLoading] = useState(true);
+interface PatientTableProps {
+  patients: Patient[];
+}
 
-  useEffect(() => {
-    const fetchPatients = async () => {
-      try {
-        const res = await fetch('/api/admin/patients');
-        const data = await res.json();
-
-        // ✅ Expecting structure: { patients: [...] }
-        if (Array.isArray(data.patients)) {
-          setPatients(data.patients);
-        } else {
-          console.warn('Invalid patient data received');
-          setPatients([]);
-        }
-      } catch (error) {
-        console.error('Failed to fetch patients:', error);
-        setPatients([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPatients();
-  }, []);
-
+const PatientTable: React.FC<PatientTableProps> = ({ patients }) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="overflow-x-auto mt-6"
-    >
-      <h3 className="text-xl font-semibold mb-4 text-blue-800">Patient List</h3>
-
-      {loading ? (
-        <p className="text-gray-500">Loading...</p>
-      ) : patients.length === 0 ? (
-        <p className="text-gray-500">No patients found.</p>
-      ) : (
-        <table className="min-w-full bg-white shadow rounded overflow-hidden">
-          <thead className="bg-blue-100 text-blue-800">
-            <tr>
-              <th className="px-4 py-2 text-left">Name</th>
-              <th className="px-4 py-2 text-left">Age</th>
-              <th className="px-4 py-2 text-left">Gender</th>
-              <th className="px-4 py-2 text-left">Phone</th>
-              <th className="px-4 py-2 text-left">Created At</th>
+    <div className="p-6">
+      <h2 className="text-2xl font-semibold mb-4">Patients</h2>
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+          <thead>
+            <tr className="bg-gray-100 dark:bg-gray-700 text-left text-sm font-medium text-gray-600 dark:text-gray-300">
+              <th className="px-4 py-2">Name</th>
+              <th className="px-4 py-2">Age</th>
+              <th className="px-4 py-2">Gender</th>
+              <th className="px-4 py-2">Phone</th>
+              <th className="px-4 py-2">Created At</th>
             </tr>
           </thead>
           <tbody>
             {patients.map((patient) => (
-              <tr key={patient.id} className="border-t hover:bg-blue-50">
+              <tr
+                key={patient.id}
+                className="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+              >
                 <td className="px-4 py-2">{patient.name}</td>
                 <td className="px-4 py-2">{patient.age}</td>
                 <td className="px-4 py-2">{patient.gender}</td>
@@ -78,7 +47,9 @@ export default function PatientTable() {
             ))}
           </tbody>
         </table>
-      )}
-    </motion.div>
+      </div>
+    </div>
   );
-}
+};
+
+export default PatientTable;

@@ -1,23 +1,23 @@
-'use client';
+"use client";
 
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { motion } from 'framer-motion';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { FaHospitalSymbol } from 'react-icons/fa';
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { motion } from "framer-motion";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { FaHospitalSymbol } from "react-icons/fa";
 
 const schema = z
   .object({
-    name: z.string().min(1, 'Hospital name is required'),
-    email: z.string().email('Invalid email'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
+    name: z.string().min(1, "Hospital name is required"),
+    email: z.string().email("Invalid email"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
   });
 
 type FormData = z.infer<typeof schema>;
@@ -32,10 +32,13 @@ export default function SignupPage() {
 
   const router = useRouter();
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
 
   const onSubmit = async (data: FormData) => {
-    const res = await fetch('/api/hospitals/register', {
-      method: 'POST',
+    setError("");
+    setSuccess(false);
+    const res = await fetch("/api/hospitals/register", {
+      method: "POST",
       body: JSON.stringify({
         name: data.name,
         email: data.email,
@@ -44,17 +47,22 @@ export default function SignupPage() {
     });
 
     if (res.ok) {
-      const { token } = await res.json();
-      localStorage.setItem('token', token);
       setSuccess(true);
       reset();
-      router.push('/dashboard'); // 👈 Redirect to Admin Dashboard
+
+      // Redirect after 2 seconds to login or dashboard
+      setTimeout(() => {
+        router.push("/login"); // Change if you want to auto-login
+      }, 2000);
+    } else {
+      const err = await res.json();
+      setError(err?.error || "Something went wrong");
     }
   };
 
   return (
     <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-50 px-4 py-24 overflow-hidden">
-      {/* Waves and Background Elements */}
+      {/* Background Blobs */}
       <div className="absolute inset-0 z-0">
         <div className="absolute -top-20 -left-20 w-[400px] h-[400px] bg-blue-200 rounded-full opacity-30 blur-[100px] animate-blob" />
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-indigo-200 rounded-full opacity-30 blur-[100px] animate-blob animation-delay-2000" />
@@ -69,55 +77,76 @@ export default function SignupPage() {
       >
         <div className="text-center mb-8">
           <FaHospitalSymbol className="text-blue-700 text-4xl mx-auto mb-2" />
-          <h2 className="text-3xl font-bold text-gray-800">Register Your Hospital</h2>
+          <h2 className="text-3xl font-bold text-gray-800">
+            Register Your Hospital
+          </h2>
           <p className="text-gray-600 mt-1 text-sm">
-            Create a secure hospital admin account to manage your team and patients
+            Create a secure hospital admin account to manage your team and
+            patients
           </p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Hospital Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Hospital Name
+            </label>
             <input
-              {...register('name')}
+              {...register("name")}
               placeholder="Apollo Medical Center"
               className="w-full border px-4 py-2 rounded-lg focus:outline-blue-600 shadow-sm"
             />
-            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              {...register('email')}
-              placeholder="admin@hospital.com"
-              className="w-full border px-4 py-2 rounded-lg focus:outline-blue-600 shadow-sm"
-            />
-            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              {...register('password')}
-              className="w-full border px-4 py-2 rounded-lg focus:outline-blue-600 shadow-sm"
-            />
-            {errors.password && (
-              <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+            {errors.name && (
+              <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <input
+              type="email"
+              {...register("email")}
+              placeholder="admin@hospital.com"
+              className="w-full border px-4 py-2 rounded-lg focus:outline-blue-600 shadow-sm"
+            />
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.email.message}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Password
+            </label>
             <input
               type="password"
-              {...register('confirmPassword')}
+              {...register("password")}
+              className="w-full border px-4 py-2 rounded-lg focus:outline-blue-600 shadow-sm"
+            />
+            {errors.password && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.password.message}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              {...register("confirmPassword")}
               className="w-full border px-4 py-2 rounded-lg focus:outline-blue-600 shadow-sm"
             />
             {errors.confirmPassword && (
-              <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.confirmPassword.message}
+              </p>
             )}
           </div>
 
@@ -126,7 +155,7 @@ export default function SignupPage() {
             disabled={isSubmitting}
             className="w-full bg-blue-700 text-white py-2 rounded-full hover:shadow-lg hover:bg-blue-800 transition duration-300"
           >
-            {isSubmitting ? 'Registering...' : 'Register'}
+            {isSubmitting ? "Registering..." : "Register"}
           </button>
 
           {success && (
@@ -135,7 +164,17 @@ export default function SignupPage() {
               animate={{ opacity: 1 }}
               className="text-green-600 text-center mt-3 font-medium"
             >
-              ✅ Hospital registered successfully!
+              ✅ Hospital registered successfully! Redirecting to login...
+            </motion.p>
+          )}
+
+          {error && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-red-500 text-center mt-3 font-medium"
+            >
+              ❌ {error}
             </motion.p>
           )}
         </form>

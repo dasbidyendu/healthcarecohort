@@ -1,29 +1,20 @@
-'use client';
-
-import { useEffect, useState } from 'react';
+"use client";
 
 type Doctor = {
   id: string;
-  name: string;
-  email?: string;
   specialization: string;
+  user: {
+    name: string;
+    email: string;
+  };
 };
 
-export default function DoctorTable() {
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
-  const [loading, setLoading] = useState(true);
+interface DoctorTableProps {
+  doctors: Doctor[];
+}
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    fetch('/api/admin/doctors', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => setDoctors(data))
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) return <p className="text-center">Loading doctors...</p>;
+export default function DoctorTable({ doctors }: DoctorTableProps) {
+  if (!doctors.length) return <p className="text-center">No doctors found.</p>;
 
   return (
     <div className="overflow-x-auto">
@@ -38,9 +29,9 @@ export default function DoctorTable() {
         <tbody>
           {doctors.map((doc) => (
             <tr key={doc.id} className="border-b hover:bg-blue-50 transition">
-              <td className="p-3 font-medium text-gray-900">{doc.name}</td>
+              <td className="p-3 font-medium text-gray-900">{doc.user.name}</td>
               <td className="p-3 text-gray-700">{doc.specialization}</td>
-              <td className="p-3 text-gray-500">{doc.email || '—'}</td>
+              <td className="p-3 text-gray-500">{doc.user.email}</td>
             </tr>
           ))}
         </tbody>

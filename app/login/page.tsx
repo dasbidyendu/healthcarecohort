@@ -1,19 +1,18 @@
-'use client';
+"use client";
 
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { motion } from 'framer-motion';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { FaUserShield } from 'react-icons/fa';
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { motion } from "framer-motion";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { FaUserShield } from "react-icons/fa";
+import Link from "next/link";
 
+// Only email and password are needed now
 const schema = z.object({
-  email: z.string().email('Enter a valid email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  role: z.enum(['HOSPITAL_ADMIN', 'STAFF', 'DOCTOR'], {
-    errorMap: () => ({ message: 'Please select a role' }),
-  }),
+  email: z.string().email("Enter a valid email"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -26,21 +25,23 @@ export default function LoginPage() {
     formState: { errors, isSubmitting },
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
-  const [errorMsg, setErrorMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState("");
 
   const onSubmit = async (data: FormData) => {
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
+    const res = await fetch("/api/hospitals/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(data),
     });
 
     if (!res.ok) {
-      setErrorMsg('Invalid credentials or role');
+      const err = await res.json();
+      setErrorMsg(err.error || "Login failed");
     } else {
-      const { token } = await res.json();
-      localStorage.setItem('token', token);
-      setErrorMsg('');
-      router.push('/dashboard');
+      setErrorMsg("");
+      router.push("/dashboard");
     }
   };
 
@@ -59,49 +60,45 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <FaUserShield className="text-blue-700 text-4xl mx-auto mb-2" />
           <h2 className="text-3xl font-bold text-gray-800">Login to DocSyne</h2>
-          <p className="text-gray-500 mt-1 text-sm">Secure login for Admins, Staff & Doctors</p>
+          <p className="text-gray-500 mt-1 text-sm">
+            Secure login for Hospital Admins
+          </p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Email */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
             <input
               type="email"
-              {...register('email')}
+              {...register("email")}
               placeholder="you@hospital.com"
               className="w-full border px-4 py-2 rounded-lg focus:outline-blue-600 shadow-sm"
             />
-            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
           {/* Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Password
+            </label>
             <input
               type="password"
-              {...register('password')}
+              {...register("password")}
               className="w-full border px-4 py-2 rounded-lg focus:outline-blue-600 shadow-sm"
             />
             {errors.password && (
-              <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.password.message}
+              </p>
             )}
-          </div>
-
-          {/* Role */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-            <select
-              {...register('role')}
-              className="w-full border px-4 py-2 rounded-lg focus:outline-blue-600 bg-white shadow-sm"
-              defaultValue=""
-            >
-              <option value="" disabled>Select your role</option>
-              <option value="HOSPITAL_ADMIN">Hospital Admin</option>
-              <option value="STAFF">Registration Staff</option>
-              <option value="DOCTOR">Doctor</option>
-            </select>
-            {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role.message}</p>}
           </div>
 
           {/* Submit */}
@@ -110,11 +107,22 @@ export default function LoginPage() {
             disabled={isSubmitting}
             className="w-full bg-blue-700 text-white py-2 rounded-full hover:shadow-lg hover:bg-blue-800 transition duration-300"
           >
-            {isSubmitting ? 'Logging in...' : 'Login'}
+            {isSubmitting ? "Logging in..." : "Login"}
           </button>
-
-          {/* Error */}
-          {errorMsg && <p className="text-red-600 text-center mt-3">{errorMsg}</p>}
+          <span className="text-md text-gray-500 w-full h-fit">
+            An employee ?
+            <Link
+              href={"/login/staff"}
+              className="w-full h-fit text-blue-700 text-md"
+            >
+              {" "}
+              Login Here
+            </Link>
+          </span>
+          {/* Error Message */}
+          {errorMsg && (
+            <p className="text-red-600 text-center mt-3">{errorMsg}</p>
+          )}
         </form>
       </motion.div>
     </section>

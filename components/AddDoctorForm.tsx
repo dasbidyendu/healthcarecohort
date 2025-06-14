@@ -1,23 +1,26 @@
-'use client';
+"use client";
 
-import { useForm } from 'react-hook-form';
-import { useState } from 'react';
+import { useForm } from "react-hook-form";
+import { useState } from "react";
 
-export default function AddDoctorForm({ onSuccess }: { onSuccess: () => void }) {
+export default function AddDoctorForm({
+  onSuccess,
+}: {
+  onSuccess: () => void;
+}) {
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
   } = useForm();
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const onSubmit = async (data: any) => {
-    const res = await fetch('/api/admin/add-doctor', {
-      method: 'POST',
+    const res = await fetch("/api/admin/add-doctor", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     });
@@ -27,7 +30,7 @@ export default function AddDoctorForm({ onSuccess }: { onSuccess: () => void }) 
       onSuccess(); // Close modal
     } else {
       const { error } = await res.json();
-      setError(error || 'Failed to add doctor');
+      setError(error || "Failed to add doctor");
     }
   };
 
@@ -36,34 +39,40 @@ export default function AddDoctorForm({ onSuccess }: { onSuccess: () => void }) 
       <h2 className="text-xl font-semibold text-blue-800">Add Doctor</h2>
 
       <input
-        {...register('name', { required: true })}
+        {...register("name", { required: true })}
         placeholder="Name"
         className="w-full border px-4 py-2 rounded"
       />
       {errors.name && <p className="text-red-500 text-sm">Name is required</p>}
 
       <input
-        {...register('specialization', { required: true })}
+        {...register("specialization", { required: true })}
         placeholder="Specialization"
         className="w-full border px-4 py-2 rounded"
       />
-      {errors.specialization && <p className="text-red-500 text-sm">Specialization is required</p>}
+      {errors.specialization && (
+        <p className="text-red-500 text-sm">Specialization is required</p>
+      )}
 
       <input
-        {...register('email', { required: true })}
+        {...register("email", { required: true })}
         type="email"
         placeholder="Email"
         className="w-full border px-4 py-2 rounded"
       />
-      {errors.email && <p className="text-red-500 text-sm">Email is required</p>}
+      {errors.email && (
+        <p className="text-red-500 text-sm">Email is required</p>
+      )}
 
       <input
-        {...register('password', { required: true })}
+        {...register("password", { required: true })}
         type="password"
         placeholder="Password"
         className="w-full border px-4 py-2 rounded"
       />
-      {errors.password && <p className="text-red-500 text-sm">Password is required</p>}
+      {errors.password && (
+        <p className="text-red-500 text-sm">Password is required</p>
+      )}
 
       {error && <p className="text-red-500 text-sm">{error}</p>}
 

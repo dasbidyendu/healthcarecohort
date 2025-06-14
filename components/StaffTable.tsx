@@ -1,30 +1,22 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import { use, useEffect } from "react";
 
 type Staff = {
   id: string;
   name: string;
   email: string;
+  role: string; // Assuming role is a string, adjust if needed
 };
 
-export default function StaffTable() {
-  const [staffList, setStaffList] = useState<Staff[]>([]);
-  const [loading, setLoading] = useState(true);
+type StaffTableProps = {
+  staffList: Staff[];
+};
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    fetch('/api/admin/staff', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => setStaffList(data))
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) return <p className="text-center">Loading staff...</p>;
+export default function StaffTable({ staffList }: StaffTableProps) {
+  if (!staffList || staffList.length === 0) {
+    return <p className="text-center">No staff found.</p>;
+  }
 
   return (
     <div className="overflow-x-auto">
