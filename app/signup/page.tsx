@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { FaHospitalSymbol } from 'react-icons/fa';
 
 const schema = z
@@ -29,6 +30,7 @@ export default function SignupPage() {
     reset,
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
+  const router = useRouter();
   const [success, setSuccess] = useState(false);
 
   const onSubmit = async (data: FormData) => {
@@ -42,8 +44,11 @@ export default function SignupPage() {
     });
 
     if (res.ok) {
+      const { token } = await res.json();
+      localStorage.setItem('token', token); // Save the JWT
       setSuccess(true);
       reset();
+      router.push('/dashboard'); // ✅ Redirect to dashboard
     }
   };
 
@@ -61,15 +66,14 @@ export default function SignupPage() {
       >
         <div className="text-center mb-8">
           <FaHospitalSymbol className="text-blue-700 text-4xl mx-auto mb-2" />
-          <h2 className="text-3xl font-bold text-gray-800">
-            Register Your Hospital
-          </h2>
+          <h2 className="text-3xl font-bold text-gray-800">Register Your Hospital</h2>
           <p className="text-gray-500 mt-1 text-sm">
             Create your hospital admin account to get started
           </p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          {/* Hospital Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Hospital Name
@@ -79,30 +83,24 @@ export default function SignupPage() {
               placeholder="Apollo Medical Center"
               className="w-full border px-4 py-2 rounded-lg focus:outline-blue-600 shadow-sm"
             />
-            {errors.name && (
-              <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
-            )}
+            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
           </div>
 
+          {/* Email */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
               type="email"
               {...register('email')}
               placeholder="admin@hospital.com"
               className="w-full border px-4 py-2 rounded-lg focus:outline-blue-600 shadow-sm"
             />
-            {errors.email && (
-              <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
-            )}
+            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
           </div>
 
+          {/* Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
             <input
               type="password"
               {...register('password')}
@@ -113,22 +111,20 @@ export default function SignupPage() {
             )}
           </div>
 
+          {/* Confirm Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Confirm Password
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
             <input
               type="password"
               {...register('confirmPassword')}
               className="w-full border px-4 py-2 rounded-lg focus:outline-blue-600 shadow-sm"
             />
             {errors.confirmPassword && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.confirmPassword.message}
-              </p>
+              <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message}</p>
             )}
           </div>
 
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={isSubmitting}
@@ -137,6 +133,7 @@ export default function SignupPage() {
             {isSubmitting ? 'Registering...' : 'Register'}
           </button>
 
+          {/* Success Message */}
           {success && (
             <motion.p
               initial={{ opacity: 0 }}
