@@ -44,3 +44,12 @@ export function verifyTokenFromCookies(req: Request | { headers: { get: (header:
   const parsed = cookie ? parse(cookie) : {};
   return parsed.session ?? null;
 }
+
+// ✅ Extracts and verifies JWT token from session cookie (used in STAFF login/session)
+export function getUserFromSession(req: Request): SessionPayload | null {
+  const cookie = req.headers.get('cookie');
+  const parsed = cookie ? parse(cookie) : {};
+  const token = parsed.session;
+  return token ? verifyToken(token) : null;
+}
+

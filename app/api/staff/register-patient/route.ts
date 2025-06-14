@@ -10,25 +10,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { doctorId, patientId, date, notes } = await req.json();
+    const { name, age, gender, phone } = await req.json();
 
-    if (!doctorId || !patientId || !date) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    if (!name || !age || !gender || !phone) {
+      return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
-    const appointment = await prisma.appointment.create({
+    const patient = await prisma.patient.create({
       data: {
-        doctorId,
-        patientId,
-        date: new Date(date),
-        notes,
+        name,
+        age: parseInt(age),
+        gender,
+        phone,
         hospitalId: session.hospitalId,
+        createdById: session.id,
       },
     });
 
-    return NextResponse.json({ success: true, appointment });
+    return NextResponse.json({ success: true, patient });
   } catch (error) {
-    console.error("[CREATE_APPOINTMENT_ERROR]", error);
+    console.error("[REGISTER_PATIENT_ERROR]", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

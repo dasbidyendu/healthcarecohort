@@ -54,8 +54,10 @@ export default function Page() {
       ]);
       const doctors = await docRes.json();
       const patients = await patRes.json();
-      setDoctors(doctors);
-      setPatients(patients);
+
+      console.log(doctors, patients);
+      setDoctors(doctors.doctors);
+      setPatients(patients.patients);
     };
 
     fetchData();
@@ -111,7 +113,7 @@ export default function Page() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch("/api/staff/create-appointment", {
+    const res = await fetch("/api/appointment/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),

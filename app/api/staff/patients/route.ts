@@ -1,4 +1,4 @@
-// /app/api/staff/doctors/route.ts
+// /app/api/staff/patients/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { verifyTokenFromCookies, verifyToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -15,28 +15,31 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const doctors = await prisma.doctor.findMany({
+    const patients = await prisma.patient.findMany({
       where: {
         hospitalId: session.hospitalId,
       },
       select: {
         id: true,
-        specialization: true,
-        user: {
+        name: true,
+        age: true,
+        gender: true,
+        phone: true,
+        createdAt: true,
+        createdBy: {
           select: {
             name: true,
-            email: true,
+            role: true,
           },
         },
       },
     });
-      console.log("Fetched doctors:", doctors);
 
-    return NextResponse.json({ success: true, doctors });
+    return NextResponse.json({ success: true, patients });
   } catch (err) {
-    console.error("Error fetching doctors:", err);
+    console.error("Error fetching patients:", err);
     return NextResponse.json(
-      { error: "Failed to fetch doctors" },
+      { error: "Failed to fetch patients" },
       { status: 500 }
     );
   }
