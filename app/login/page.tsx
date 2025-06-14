@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { FaUserShield } from 'react-icons/fa';
 
 const schema = z.object({
@@ -18,6 +19,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function LoginPage() {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -35,8 +37,10 @@ export default function LoginPage() {
     if (!res.ok) {
       setErrorMsg('Invalid credentials or role');
     } else {
+      const { token } = await res.json();
+      localStorage.setItem('token', token);
       setErrorMsg('');
-      // Optionally: redirect to dashboard
+      router.push('/dashboard');
     }
   };
 
@@ -59,6 +63,7 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
@@ -70,6 +75,7 @@ export default function LoginPage() {
             {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
           </div>
 
+          {/* Password */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
             <input
@@ -82,6 +88,7 @@ export default function LoginPage() {
             )}
           </div>
 
+          {/* Role */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
             <select
@@ -97,6 +104,7 @@ export default function LoginPage() {
             {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role.message}</p>}
           </div>
 
+          {/* Submit */}
           <button
             type="submit"
             disabled={isSubmitting}
@@ -105,6 +113,7 @@ export default function LoginPage() {
             {isSubmitting ? 'Logging in...' : 'Login'}
           </button>
 
+          {/* Error */}
           {errorMsg && <p className="text-red-600 text-center mt-3">{errorMsg}</p>}
         </form>
       </motion.div>
