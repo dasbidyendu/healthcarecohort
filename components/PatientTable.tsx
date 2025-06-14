@@ -10,68 +10,75 @@ type Patient = {
   gender: string;
   phone: string;
   createdAt: string;
-  createdBy: {
-    name: string;
-  };
 };
 
 export default function PatientTable() {
   const [patients, setPatients] = useState<Patient[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPatients = async () => {
-      const res = await fetch('/api/admin/patients', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      const data = await res.json();
-      setPatients(data.patients || []);
+      try {
+        const res = await fetch('/api/admin/patients');
+        const data = await res.json();
+
+        // ✅ Expecting structure: { patients: [...] }
+        if (Array.isArray(data.patients)) {
+          setPatients(data.patients);
+        } else {
+          console.warn('Invalid patient data received');
+          setPatients([]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch patients:', error);
+        setPatients([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchPatients();
   }, []);
 
-  if (patients.length === 0) {
-    return <p className="text-center text-gray-500">No patients found.</p>;
-  }
-
   return (
-    <div className="overflow-x-auto">
-      <motion.table
-        className="min-w-full bg-white text-sm text-left text-gray-600 shadow-md rounded-xl overflow-hidden"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.4 }}
-      >
-        <thead className="bg-blue-100 text-blue-800 font-semibold text-sm uppercase">
-          <tr>
-            <th className="px-6 py-3">Name</th>
-            <th className="px-6 py-3">Age</th>
-            <th className="px-6 py-3">Gender</th>
-            <th className="px-6 py-3">Phone</th>
-            <th className="px-6 py-3">Added By</th>
-            <th className="px-6 py-3">Added On</th>
-          </tr>
-        </thead>
-        <tbody>
-          {patients.map((p) => (
-            <tr
-              key={p.id}
-              className="hover:bg-blue-50 transition-colors border-b border-gray-100"
-            >
-              <td className="px-6 py-4 font-medium text-gray-900">{p.name}</td>
-              <td className="px-6 py-4">{p.age}</td>
-              <td className="px-6 py-4">{p.gender}</td>
-              <td className="px-6 py-4">{p.phone}</td>
-              <td className="px-6 py-4">{p.createdBy?.name ?? 'Unknown'}</td>
-              <td className="px-6 py-4">
-                {new Date(p.createdAt).toLocaleDateString()}
-              </td>
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="overflow-x-auto mt-6"
+    >
+      <h3 className="text-xl font-semibold mb-4 text-blue-800">Patient List</h3>
+
+      {loading ? (
+        <p className="text-gray-500">Loading...</p>
+      ) : patients.length === 0 ? (
+        <p className="text-gray-500">No patients found.</p>
+      ) : (
+        <table className="min-w-full bg-white shadow rounded overflow-hidden">
+          <thead className="bg-blue-100 text-blue-800">
+            <tr>
+              <th className="px-4 py-2 text-left">Name</th>
+              <th className="px-4 py-2 text-left">Age</th>
+              <th className="px-4 py-2 text-left">Gender</th>
+              <th className="px-4 py-2 text-left">Phone</th>
+              <th className="px-4 py-2 text-left">Created At</th>
             </tr>
-          ))}
-        </tbody>
-      </motion.table>
-    </div>
+          </thead>
+          <tbody>
+            {patients.map((patient) => (
+              <tr key={patient.id} className="border-t hover:bg-blue-50">
+                <td className="px-4 py-2">{patient.name}</td>
+                <td className="px-4 py-2">{patient.age}</td>
+                <td className="px-4 py-2">{patient.gender}</td>
+                <td className="px-4 py-2">{patient.phone}</td>
+                <td className="px-4 py-2">
+                  {new Date(patient.createdAt).toLocaleDateString()}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </motion.div>
   );
 }

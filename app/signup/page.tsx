@@ -45,39 +45,39 @@ export default function SignupPage() {
 
     if (res.ok) {
       const { token } = await res.json();
-      localStorage.setItem('token', token); // Save the JWT
+      localStorage.setItem('token', token);
       setSuccess(true);
       reset();
-      router.push('/dashboard'); // ✅ Redirect to dashboard
+      router.push('/dashboard'); // 👈 Redirect to Admin Dashboard
     }
   };
 
   return (
-    <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-50 px-4 py-24 relative overflow-hidden">
-      {/* Background Blobs */}
-      <div className="absolute -top-40 -left-40 w-[300px] h-[300px] bg-blue-300 rounded-full mix-blend-multiply opacity-20 blur-3xl animate-blob" />
-      <div className="absolute bottom-0 right-0 w-[300px] h-[300px] bg-indigo-300 rounded-full mix-blend-multiply opacity-20 blur-2xl animate-blob animation-delay-4000" />
+    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-50 px-4 py-24 overflow-hidden">
+      {/* Waves and Background Elements */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute -top-20 -left-20 w-[400px] h-[400px] bg-blue-200 rounded-full opacity-30 blur-[100px] animate-blob" />
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-indigo-200 rounded-full opacity-30 blur-[100px] animate-blob animation-delay-2000" />
+        <div className="absolute top-[40%] left-[40%] w-96 h-96 bg-blue-100 rounded-full opacity-20 blur-[120px]" />
+      </div>
 
       <motion.div
-        initial={{ opacity: 0, y: 50 }}
+        initial={{ opacity: 0, y: 60 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="relative z-10 bg-white shadow-2xl rounded-2xl max-w-xl w-full px-8 py-10"
+        transition={{ duration: 0.7 }}
+        className="relative z-10 bg-white/80 backdrop-blur-md shadow-xl rounded-2xl max-w-xl w-full px-8 py-10"
       >
         <div className="text-center mb-8">
           <FaHospitalSymbol className="text-blue-700 text-4xl mx-auto mb-2" />
           <h2 className="text-3xl font-bold text-gray-800">Register Your Hospital</h2>
-          <p className="text-gray-500 mt-1 text-sm">
-            Create your hospital admin account to get started
+          <p className="text-gray-600 mt-1 text-sm">
+            Create a secure hospital admin account to manage your team and patients
           </p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          {/* Hospital Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Hospital Name
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Hospital Name</label>
             <input
               {...register('name')}
               placeholder="Apollo Medical Center"
@@ -86,7 +86,6 @@ export default function SignupPage() {
             {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
           </div>
 
-          {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
@@ -98,7 +97,6 @@ export default function SignupPage() {
             {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
           </div>
 
-          {/* Password */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
             <input
@@ -111,7 +109,6 @@ export default function SignupPage() {
             )}
           </div>
 
-          {/* Confirm Password */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
             <input
@@ -124,7 +121,6 @@ export default function SignupPage() {
             )}
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={isSubmitting}
@@ -133,7 +129,6 @@ export default function SignupPage() {
             {isSubmitting ? 'Registering...' : 'Register'}
           </button>
 
-          {/* Success Message */}
           {success && (
             <motion.p
               initial={{ opacity: 0 }}
