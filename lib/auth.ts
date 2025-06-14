@@ -1,11 +1,15 @@
-import jwt from 'jsonwebtoken';
+import { serialize, parse } from 'cookie';
 
-const JWT_SECRET = process.env.JWT_SECRET!;
+export function setSessionCookie(userId: string) {
+  return serialize('session', userId, {
+    path: '/',
+    httpOnly: true,
+    maxAge: 60 * 60 * 24 * 7, // 1 week
+  });
+}
 
-export function verifyToken(token: string) {
-  try {
-    return jwt.verify(token, JWT_SECRET);
-  } catch {
-    return null;
-  }
+export function getSessionIdFromRequest(req: Request) {
+  const cookie = req.headers.get('cookie');
+  const parsed = cookie ? parse(cookie) : {};
+  return parsed.session;
 }
