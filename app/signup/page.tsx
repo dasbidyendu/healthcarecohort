@@ -1,0 +1,153 @@
+'use client';
+
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { FaHospitalSymbol } from 'react-icons/fa';
+
+const schema = z
+  .object({
+    name: z.string().min(1, 'Hospital name is required'),
+    email: z.string().email('Invalid email'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
+
+type FormData = z.infer<typeof schema>;
+
+export default function SignupPage() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<FormData>({ resolver: zodResolver(schema) });
+
+  const [success, setSuccess] = useState(false);
+
+  const onSubmit = async (data: FormData) => {
+    const res = await fetch('/api/hospitals/register', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+      }),
+    });
+
+    if (res.ok) {
+      setSuccess(true);
+      reset();
+    }
+  };
+
+  return (
+    <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-50 px-4 py-24 relative overflow-hidden">
+      {/* Background Blobs */}
+      <div className="absolute -top-40 -left-40 w-[300px] h-[300px] bg-blue-300 rounded-full mix-blend-multiply opacity-20 blur-3xl animate-blob" />
+      <div className="absolute bottom-0 right-0 w-[300px] h-[300px] bg-indigo-300 rounded-full mix-blend-multiply opacity-20 blur-2xl animate-blob animation-delay-4000" />
+
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="relative z-10 bg-white shadow-2xl rounded-2xl max-w-xl w-full px-8 py-10"
+      >
+        <div className="text-center mb-8">
+          <FaHospitalSymbol className="text-blue-700 text-4xl mx-auto mb-2" />
+          <h2 className="text-3xl font-bold text-gray-800">
+            Register Your Hospital
+          </h2>
+          <p className="text-gray-500 mt-1 text-sm">
+            Create your hospital admin account to get started
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Hospital Name
+            </label>
+            <input
+              {...register('name')}
+              placeholder="Apollo Medical Center"
+              className="w-full border px-4 py-2 rounded-lg focus:outline-blue-600 shadow-sm"
+            />
+            {errors.name && (
+              <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <input
+              type="email"
+              {...register('email')}
+              placeholder="admin@hospital.com"
+              className="w-full border px-4 py-2 rounded-lg focus:outline-blue-600 shadow-sm"
+            />
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Password
+            </label>
+            <input
+              type="password"
+              {...register('password')}
+              className="w-full border px-4 py-2 rounded-lg focus:outline-blue-600 shadow-sm"
+            />
+            {errors.password && (
+              <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              {...register('confirmPassword')}
+              className="w-full border px-4 py-2 rounded-lg focus:outline-blue-600 shadow-sm"
+            />
+            {errors.confirmPassword && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.confirmPassword.message}
+              </p>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-blue-700 text-white py-2 rounded-full hover:shadow-lg hover:bg-blue-800 transition duration-300"
+          >
+            {isSubmitting ? 'Registering...' : 'Register'}
+          </button>
+
+          {success && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-green-600 text-center mt-3 font-medium"
+            >
+              ✅ Hospital registered successfully!
+            </motion.p>
+          )}
+        </form>
+      </motion.div>
+    </section>
+  );
+}
