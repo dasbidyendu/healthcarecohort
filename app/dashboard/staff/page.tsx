@@ -1,10 +1,11 @@
 // app/dashboard/staff/page.tsx or wherever your StaffDashboard is
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { FaTimes, FaPlus, FaStethoscope } from 'react-icons/fa';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { FaTimes, FaPlus, FaStethoscope } from "react-icons/fa";
+import LogoutButton from "@/components/LogoutButton";
 
 interface Appointment {
   id: string;
@@ -15,27 +16,47 @@ interface Appointment {
 }
 
 export default function StaffDashboard() {
+  const router = useRouter();
+  useEffect(() => {
+    const checkSession = async () => {
+      const res = await fetch("/api/auth/session");
+      if (!res.ok) {
+        router.push("/login");
+      }
+    };
+
+    checkSession();
+  }, []);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [stats, setStats] = useState({ doctors: 0, patients: 0, appointments: 0 });
+  const [stats, setStats] = useState({
+    doctors: 0,
+    patients: 0,
+    appointments: 0,
+  });
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     async function fetchDashboardData() {
       try {
         const [appointmentsRes, statsRes] = await Promise.all([
-          fetch('/api/appointment/fetchAll'),
-          fetch('/api/dashboard/stats'),
+          fetch("/api/appointment/fetchAll"),
+          fetch("/api/dashboard/stats"),
         ]);
 
-        if (!appointmentsRes.ok || !statsRes.ok) throw new Error('Failed to fetch');
+        if (!appointmentsRes.ok || !statsRes.ok)
+          throw new Error("Failed to fetch");
 
         const { appointments } = await appointmentsRes.json();
-        const { doctors, patients, appointments: totalAppointments } = await statsRes.json();
+        const {
+          doctors,
+          patients,
+          appointments: totalAppointments,
+        } = await statsRes.json();
 
         setAppointments(appointments);
         setStats({ doctors, patients, appointments: totalAppointments });
       } catch (error) {
-        console.error('Error fetching staff dashboard:', error);
+        console.error("Error fetching staff dashboard:", error);
       }
     }
 
@@ -57,7 +78,7 @@ export default function StaffDashboard() {
       {/* Sidebar */}
       <div
         className={`fixed inset-0 z-40 transition-transform duration-300 ease-in-out ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } md:relative md:translate-x-0 md:w-64 w-full h-full md:h-auto`}
       >
         <aside className="h-full bg-white p-6 shadow-xl space-y-6">
@@ -72,6 +93,7 @@ export default function StaffDashboard() {
               Add Appointment
             </Link>
           </nav>
+          <LogoutButton />
         </aside>
       </div>
 
@@ -87,18 +109,34 @@ export default function StaffDashboard() {
 
       {/* Main Content */}
       <main className="flex-1 p-6 space-y-6 md:ml-64">
-        <h1 className="text-2xl font-semibold text-blue-800">Staff Dashboard</h1>
+        <h1 className="text-2xl font-semibold text-blue-800">
+          Staff Dashboard
+        </h1>
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <StatCard label="Doctors" value={stats.doctors} color="bg-green-100 text-green-800" />
-          <StatCard label="Patients" value={stats.patients} color="bg-yellow-100 text-yellow-800" />
-          <StatCard label="Appointments" value={stats.appointments} color="bg-red-100 text-red-800" />
+          <StatCard
+            label="Doctors"
+            value={stats.doctors}
+            color="bg-green-100 text-green-800"
+          />
+          <StatCard
+            label="Patients"
+            value={stats.patients}
+            color="bg-yellow-100 text-yellow-800"
+          />
+          <StatCard
+            label="Appointments"
+            value={stats.appointments}
+            color="bg-red-100 text-red-800"
+          />
         </div>
 
         {/* Appointments Table */}
         <div className="bg-white rounded-xl p-6 shadow-md">
-          <h2 className="text-lg font-semibold text-blue-800 mb-4">Recent Appointments</h2>
+          <h2 className="text-lg font-semibold text-blue-800 mb-4">
+            Recent Appointments
+          </h2>
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead>
@@ -114,8 +152,10 @@ export default function StaffDashboard() {
                   <tr key={appt.id} className="border-t">
                     <td className="p-2">{appt.patient.name}</td>
                     <td className="p-2">{appt.doctor.user.name}</td>
-                    <td className="p-2">{new Date(appt.date).toLocaleString()}</td>
-                    <td className="p-2">{appt.notes || '—'}</td>
+                    <td className="p-2">
+                      {new Date(appt.date).toLocaleString()}
+                    </td>
+                    <td className="p-2">{appt.notes || "—"}</td>
                   </tr>
                 ))}
                 {appointments.length === 0 && (
