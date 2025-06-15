@@ -20,9 +20,9 @@ const PatientTable: React.FC<PatientTableProps> = ({ patients }) => {
     <div className="p-6">
       <h2 className="text-2xl font-semibold mb-4">Patients</h2>
       <div className="overflow-x-auto">
-        <table className="min-w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <table className="min-w-full bg-white dark:bg-white border border-gray-200 dark:border-gray-700">
           <thead>
-            <tr className="bg-gray-100 dark:bg-gray-700 text-left text-sm font-medium text-gray-600 dark:text-gray-300">
+            <tr className="bg-gray-100 dark:bg-blue-50 text-left text-sm font-medium text-gray-600 dark:text-gray-300">
               <th className="px-4 py-2">Name</th>
               <th className="px-4 py-2">Age</th>
               <th className="px-4 py-2">Gender</th>
@@ -34,7 +34,7 @@ const PatientTable: React.FC<PatientTableProps> = ({ patients }) => {
             {patients.map((patient) => (
               <tr
                 key={patient.id}
-                className="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                className="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-blue-100 transition"
               >
                 <td className="px-4 py-2">{patient.name}</td>
                 <td className="px-4 py-2">{patient.age}</td>
