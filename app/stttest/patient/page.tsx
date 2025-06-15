@@ -1,6 +1,9 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import { Mic, Square, Loader2 } from "lucide-react";
+import Link from "next/link";
+import React, { useRef, useState } from "react";
+import toast, { Toaster } from "react-hot-toast";
 
 type PatientField = "name" | "age" | "gender" | "phone";
 
@@ -23,10 +26,14 @@ export default function PatientRegistrationForm() {
     gender: "",
     phone: "",
   });
+
   const [languageCode, setLanguageCode] = useState("en");
   const [recordingField, setRecordingField] = useState<PatientField | null>(
     null
   );
+  const [transcribingField, setTranscribingField] =
+    useState<PatientField | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -53,25 +60,35 @@ export default function PatientRegistrationForm() {
     };
 
     mediaRecorder.onstop = async () => {
+      setTranscribingField(field);
+
       const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
       const formData = new FormData();
       formData.append("audio", blob);
       formData.append("language_code", languageCode);
 
-      const res = await fetch("/api/assemblyai", {
-        method: "POST",
-        body: formData,
-      });
+      try {
+        const res = await fetch("/api/assemblyai", {
+          method: "POST",
+          body: formData,
+        });
 
-      const { text } = await res.json();
-      if (text) {
-        setForm((prev) => ({
-          ...prev,
-          [field]: field === "age" ? text.replace(/\D/g, "") : text, // digits only for age
-        }));
+        const { text } = await res.json();
+        if (text) {
+          setForm((prev) => ({
+            ...prev,
+            [field]: field === "age" ? text.replace(/\D/g, "") : text,
+          }));
+          toast.success(`${field} transcribed!`);
+        } else {
+          toast.error("Could not transcribe audio.");
+        }
+      } catch {
+        toast.error("Something went wrong with transcription.");
+      } finally {
+        setRecordingField(null);
+        setTranscribingField(null);
       }
-
-      setRecordingField(null);
     };
 
     mediaRecorder.start();
@@ -84,80 +101,129 @@ export default function PatientRegistrationForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
 
-    const res = await fetch("/api/staff/register-patient", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
+    try {
+      const res = await fetch("/api/staff/register-patient", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
 
-    if (res.ok) {
-      alert("✅ Patient registered!");
-      setForm({ name: "", age: "", gender: "", phone: "" });
-    } else {
-      alert("❌ Failed to register patient.");
+      if (res.ok) {
+        toast.success("Patient registered!");
+        setForm({ name: "", age: "", gender: "", phone: "" });
+      } else {
+        toast.error("Failed to register patient.");
+      }
+    } catch {
+      toast.error("Server error.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="max-w-xl mx-auto bg-white p-6 mt-10 rounded-lg shadow space-y-5"
-    >
-      <h2 className="text-2xl font-semibold">📝 Register Patient</h2>
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-white to-blue-200 flex items-center justify-center px-4">
+      <Toaster />
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-2xl bg-white/70 backdrop-blur-xl rounded-2xl shadow-xl px-10 py-12 space-y-6 border border-blue-100"
+      >
+        <h1 className="text-3xl font-semibold text-blue-900 mb-4">
+          Register New Patient
+        </h1>
 
-      <div>
-        <label className="block mb-1 text-gray-700">Language</label>
-        <select
-          className="w-full border px-3 py-2 rounded"
-          value={languageCode}
-          onChange={(e) => setLanguageCode(e.target.value)}
-        >
-          {Object.keys(speechSynthesisLanguages).map((lang) => (
-            <option key={lang} value={lang}>
-              {lang.toUpperCase()}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {(["name", "age", "gender", "phone"] as PatientField[]).map((field) => (
-        <div key={field}>
-          <label className="block text-gray-700 mb-1 capitalize">{field}</label>
-          <div className="flex gap-2 items-center">
-            <input
-              type={field === "age" ? "number" : "text"}
-              value={(form as any)[field]}
-              onChange={(e) => setForm({ ...form, [field]: e.target.value })}
-              className="flex-1 px-4 py-2 border rounded"
-              placeholder={`Enter ${field}...`}
-              required
-            />
-            <button
-              type="button"
-              onClick={() =>
-                recordingField === field
-                  ? stopRecording()
-                  : startRecording(field)
-              }
-              className={`px-3 py-2 rounded text-white text-sm ${
-                recordingField === field ? "bg-red-600" : "bg-green-600"
-              }`}
-            >
-              {recordingField === field ? "⏹ Stop" : "🎙 Record"}
-            </button>
-          </div>
-          {recordingField === field && (
-            <p className="text-sm text-red-600 mt-1 animate-pulse">
-              Recording {field}...
-            </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {(["name", "age", "gender", "phone"] as PatientField[]).map(
+            (field) => (
+              <div key={field} className="space-y-1">
+                <label className="text-gray-700 font-medium capitalize">
+                  {field}
+                </label>
+                <div className="relative flex items-center">
+                  <input
+                    type={field === "age" ? "number" : "text"}
+                    value={(form as any)[field]}
+                    onChange={(e) =>
+                      setForm({ ...form, [field]: e.target.value })
+                    }
+                    className="w-full px-4 py-2 pr-12 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300 text-gray-800"
+                    placeholder={`Enter ${field}...`}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      recordingField === field
+                        ? stopRecording()
+                        : startRecording(field)
+                    }
+                    className="absolute right-2 p-1.5 rounded-full bg-blue-500 hover:bg-blue-600 text-white transition"
+                    disabled={transcribingField !== null}
+                  >
+                    {recordingField === field ? (
+                      <Square size={16} />
+                    ) : (
+                      <Mic size={16} />
+                    )}
+                  </button>
+                </div>
+                {recordingField === field && (
+                  <p className="text-sm text-red-500 animate-pulse">
+                    Recording...
+                  </p>
+                )}
+                {transcribingField === field && (
+                  <p className="text-sm text-blue-500 animate-pulse">
+                    Transcribing...
+                  </p>
+                )}
+              </div>
+            )
           )}
         </div>
-      ))}
 
-      <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md">
-        ✅ Register Patient
-      </button>
-    </form>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <label className="block text-sm text-gray-600">Language</label>
+            <select
+              value={languageCode}
+              onChange={(e) => setLanguageCode(e.target.value)}
+              className="mt-1 px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            >
+              {Object.keys(speechSynthesisLanguages).map((lang) => (
+                <option key={lang} value={lang}>
+                  {lang.toUpperCase()}
+                </option>
+              ))}
+            </select>
+
+            <Link
+              href={"/dashboard/staff"}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 my-2
+            rounded-lg text-lg font-semibold transition disabled:opacity-60
+            disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              Go Back
+            </Link>
+          </div>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-lg font-semibold transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {submitting ? (
+              <>
+                <Loader2 size={18} className="animate-spin" />
+                Registering...
+              </>
+            ) : (
+              <>Register Patient</>
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
