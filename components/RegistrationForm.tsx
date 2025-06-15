@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
+import { Loader2, Mic, StopCircle } from "lucide-react";
 
 type FieldKey = "name" | "age" | "gender";
 
@@ -10,7 +11,6 @@ const fieldPrompts: Record<FieldKey, string> = {
   gender: "Please say your gender, for example male or female",
 };
 
-// BCP 47 tags for speech synthesis
 const speechSynthesisLanguages: Record<string, string> = {
   en: "en-US",
   es: "es-ES",
@@ -24,7 +24,9 @@ const speechSynthesisLanguages: Record<string, string> = {
 export default function PatientRegistrationForm() {
   const [form, setForm] = useState({ name: "", age: "", gender: "" });
   const [recordingField, setRecordingField] = useState<FieldKey | null>(null);
-  const [languageCode, setLanguageCode] = useState("en"); // for AssemblyAI
+  const [languageCode, setLanguageCode] = useState("en");
+  const [transcribing, setTranscribing] = useState(false);
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
@@ -53,21 +55,28 @@ export default function PatientRegistrationForm() {
       const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
       const formData = new FormData();
       formData.append("audio", blob);
-      formData.append("language_code", languageCode); // used for AssemblyAI
+      formData.append("language_code", languageCode);
 
-      const res = await fetch("/api/assemblyai", {
-        method: "POST",
-        body: formData,
-      });
+      setTranscribing(true);
 
-      const { text } = await res.json();
-      if (text) {
-        setForm((prev) => ({
-          ...prev,
-          [field]: field === "age" ? text.replace(/\D/g, "") : text, // filter non-numeric for age
-        }));
+      try {
+        const res = await fetch("/api/assemblyai", {
+          method: "POST",
+          body: formData,
+        });
+
+        const { text } = await res.json();
+        if (text) {
+          setForm((prev) => ({
+            ...prev,
+            [field]: field === "age" ? text.replace(/\D/g, "") : text,
+          }));
+        }
+      } catch (error) {
+        console.error("Transcription error:", error);
       }
 
+      setTranscribing(false);
       setRecordingField(null);
     };
 
@@ -80,67 +89,91 @@ export default function PatientRegistrationForm() {
   };
 
   return (
-    <div className="max-w-lg mx-auto mt-12 p-8 bg-white rounded-xl shadow-md border space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800">
-        🧾 Patient Registration
-      </h2>
+    <div className="min-h-screen bg-gradient-to-tr from-blue-50 to-blue-100 py-16 px-4">
+      <div className="max-w-xl mx-auto bg-white rounded-2xl shadow-lg p-10 space-y-6">
+        <h1 className="text-3xl font-bold text-blue-800 text-center">
+          🧾 Patient Registration
+        </h1>
 
-      <div className="mb-4">
-        <label className="block text-gray-700">Language</label>
-        <select
-          className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md text-gray-900"
-          value={languageCode}
-          onChange={(e) => setLanguageCode(e.target.value)}
-        >
-          <option value="en">English</option>
-          <option value="es">Spanish</option>
-          <option value="fr">French</option>
-          <option value="de">German</option>
-          <option value="hi">Hindi</option>
-          <option value="ar">Arabic</option>
-          <option value="zh">Chinese</option>
-        </select>
-      </div>
-
-      {(["name", "age", "gender"] as FieldKey[]).map((field) => (
-        <div key={field}>
-          <label className="block text-gray-700 capitalize">{field}</label>
-          <div className="flex gap-2 items-center mt-1">
-            <input
-              value={form[field]}
-              type={field === "age" ? "number" : "text"}
-              onChange={(e) => setForm({ ...form, [field]: e.target.value })}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-900 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-              placeholder={`Enter ${field}`}
-            />
-            <button
-              type="button"
-              onClick={() =>
-                recordingField === field
-                  ? stopRecording()
-                  : startRecording(field)
-              }
-              className={`px-3 py-2 text-white text-sm rounded-md transition ${
-                recordingField === field
-                  ? "bg-red-600 hover:bg-red-700"
-                  : "bg-green-600 hover:bg-green-700"
-              }`}
-            >
-              {recordingField === field ? "⏹ Stop" : "🎙 Record"}
-            </button>
-          </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Select Language
+          </label>
+          <select
+            value={languageCode}
+            onChange={(e) => setLanguageCode(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+          >
+            <option value="en">English</option>
+            <option value="es">Spanish</option>
+            <option value="fr">French</option>
+            <option value="de">German</option>
+            <option value="hi">Hindi</option>
+            <option value="ar">Arabic</option>
+            <option value="zh">Chinese</option>
+          </select>
         </div>
-      ))}
 
-      {recordingField && (
-        <p className="text-sm text-red-600 animate-pulse text-center">
-          Recording {recordingField}...
-        </p>
-      )}
+        {(["name", "age", "gender"] as FieldKey[]).map((field) => (
+          <div key={field}>
+            <label className="block text-sm font-medium text-gray-700 capitalize mb-1">
+              {field}
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                value={form[field]}
+                onChange={(e) => setForm({ ...form, [field]: e.target.value })}
+                type={field === "age" ? "number" : "text"}
+                placeholder={`Enter ${field}`}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  recordingField === field
+                    ? stopRecording()
+                    : startRecording(field)
+                }
+                disabled={transcribing}
+                className={`p-2 rounded-lg transition ${
+                  transcribing
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : recordingField === field
+                    ? "bg-red-600 hover:bg-red-700"
+                    : "bg-green-600 hover:bg-green-700"
+                } text-white`}
+              >
+                {recordingField === field ? (
+                  <StopCircle className="w-5 h-5" />
+                ) : (
+                  <Mic className="w-5 h-5" />
+                )}
+              </button>
+            </div>
+          </div>
+        ))}
 
-      <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md">
-        ✅ Register
-      </button>
+        {recordingField && (
+          <p className="text-sm text-red-600 animate-pulse text-center">
+            🎙️ Recording {recordingField}...
+          </p>
+        )}
+
+        {transcribing && (
+          <p className="flex items-center justify-center gap-2 text-sm text-blue-600 text-center animate-pulse">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Transcribing, please wait...
+          </p>
+        )}
+
+        <button
+          type="submit"
+          className="w-full mt-4 py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition"
+          disabled={transcribing || !!recordingField}
+        >
+          ✅ Register
+        </button>
+      </div>
     </div>
   );
 }
