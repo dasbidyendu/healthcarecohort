@@ -1,11 +1,12 @@
-"use client";
+'use client';
 
-import React, { useEffect, useRef, useState } from "react";
-import { Mic, Square, Loader2 } from "lucide-react";
-import toast, { Toaster } from "react-hot-toast";
-import Link from "next/link";
+import React, { useEffect, useRef, useState } from 'react';
+import { Mic, Square, Loader2 } from 'lucide-react';
+import toast, { Toaster } from 'react-hot-toast';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
 
-type AppointmentField = "notes";
+type AppointmentField = 'notes';
 
 interface Doctor {
   id: string;
@@ -17,33 +18,25 @@ interface Patient {
 }
 
 const speechSynthesisLanguages: Record<string, string> = {
-  en: "en-US",
-  es: "es-ES",
-  fr: "fr-FR",
-  de: "de-DE",
-  hi: "hi-IN",
-  ar: "ar-SA",
-  zh: "zh-CN",
+  en: 'en-US',
+  hi: 'hi-IN',
 };
 
 const prompts: Record<AppointmentField, string> = {
-  notes: "Please speak the appointment notes clearly.",
+  notes: 'Please speak the appointment notes clearly.',
 };
 
 export default function AppointmentForm() {
   const [form, setForm] = useState({
-    doctorId: "",
-    patientId: "",
-    date: "",
-    notes: "",
+    doctorId: '',
+    patientId: '',
+    date: '',
+    notes: '',
   });
 
-  const [languageCode, setLanguageCode] = useState("en");
-  const [recordingField, setRecordingField] = useState<AppointmentField | null>(
-    null
-  );
-  const [transcribingField, setTranscribingField] =
-    useState<AppointmentField | null>(null);
+  const [languageCode, setLanguageCode] = useState('en');
+  const [recordingField, setRecordingField] = useState<AppointmentField | null>(null);
+  const [transcribingField, setTranscribingField] = useState<AppointmentField | null>(null);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -55,15 +48,15 @@ export default function AppointmentForm() {
     const fetchData = async () => {
       try {
         const [docRes, patRes] = await Promise.all([
-          fetch("/api/staff/doctors"),
-          fetch("/api/staff/patients"),
+          fetch('/api/staff/doctors'),
+          fetch('/api/staff/patients'),
         ]);
         const doctorsData = await docRes.json();
         const patientsData = await patRes.json();
         setDoctors(doctorsData.doctors || []);
         setPatients(patientsData.patients || []);
       } catch {
-        toast.error("Failed to fetch doctors or patients.");
+        toast.error('Failed to fetch doctors or patients.');
       }
     };
 
@@ -73,7 +66,7 @@ export default function AppointmentForm() {
   const speakPrompt = (text: string): Promise<void> => {
     return new Promise((resolve) => {
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = speechSynthesisLanguages[languageCode] || "en-US";
+      utterance.lang = speechSynthesisLanguages[languageCode] || 'en-US';
       utterance.onend = () => resolve();
       speechSynthesis.speak(utterance);
     });
@@ -93,26 +86,25 @@ export default function AppointmentForm() {
 
     mediaRecorder.onstop = async () => {
       setTranscribingField(field);
-
-      const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+      const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
       const formData = new FormData();
-      formData.append("audio", blob);
-      formData.append("language_code", languageCode);
+      formData.append('audio', blob);
+      formData.append('language_code', languageCode);
 
       try {
-        const res = await fetch("/api/assemblyai", {
-          method: "POST",
+        const res = await fetch('/api/assemblyai', {
+          method: 'POST',
           body: formData,
         });
         const { text } = await res.json();
         if (text) {
           setForm((prev) => ({ ...prev, [field]: text }));
-          toast.success("Notes transcribed!");
+          toast.success('Notes transcribed!');
         } else {
-          toast.error("Could not transcribe audio.");
+          toast.error('Could not transcribe audio.');
         }
       } catch {
-        toast.error("Something went wrong with transcription.");
+        toast.error('Something went wrong with transcription.');
       } finally {
         setRecordingField(null);
         setTranscribingField(null);
@@ -132,33 +124,41 @@ export default function AppointmentForm() {
     setSubmitting(true);
 
     try {
-      const res = await fetch("/api/appointment/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/appointment/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
 
       if (res.ok) {
-        toast.success("✅ Appointment Created!");
-        setForm({ doctorId: "", patientId: "", date: "", notes: "" });
+        toast.success('✅ Appointment Created!');
+        setForm({ doctorId: '', patientId: '', date: '', notes: '' });
       } else {
-        toast.error("❌ Failed to create appointment.");
+        toast.error('❌ Failed to create appointment.');
       }
     } catch {
-      toast.error("❌ Server error.");
+      toast.error('❌ Server error.');
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-100 via-white to-green-200 flex items-center justify-center px-4">
+    <div className="relative min-h-screen bg-gradient-to-br from-blue-100 via-white to-blue-200 flex items-center justify-center px-4">
       <Toaster />
-      <form
+
+      {/* Background animated blobs */}
+      <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-blue-200 rounded-full blur-3xl opacity-20 animate-blob" />
+      <div className="absolute bottom-0 right-0 w-[350px] h-[350px] bg-indigo-300 rounded-full blur-2xl opacity-20 animate-blob animation-delay-4000" />
+
+      <motion.form
         onSubmit={handleSubmit}
-        className="w-full max-w-2xl bg-white/70 backdrop-blur-xl rounded-2xl shadow-xl px-10 py-12 space-y-6 border border-green-100"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="relative z-10 w-full max-w-2xl bg-white/70 backdrop-blur-md border border-blue-100 rounded-2xl shadow-xl px-10 py-12 space-y-6"
       >
-        <h1 className="text-3xl font-semibold text-green-900 mb-4">
+        <h1 className="text-3xl font-bold text-blue-900 mb-6 text-center">
           Create New Appointment
         </h1>
 
@@ -197,8 +197,8 @@ export default function AppointmentForm() {
             </select>
           </div>
 
-          <div>
-            <label className="block mb-1 text-gray-700">Date</label>
+          <div className="col-span-full">
+            <label className="block mb-1 text-gray-700">Date & Time</label>
             <input
               type="datetime-local"
               required
@@ -208,52 +208,44 @@ export default function AppointmentForm() {
             />
           </div>
 
-          <div className="space-y-1 col-span-full">
-            <label className="block mb-1 text-gray-700">Notes</label>
+          <div className="col-span-full space-y-1">
+            <label className="block text-gray-700">Notes</label>
             <div className="relative flex items-center">
               <textarea
+                required
+                rows={4}
                 value={form.notes}
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
                 className="w-full border px-3 py-2 rounded pr-12"
-                rows={4}
-                placeholder="Enter notes or use voice..."
-                required
+                placeholder="Enter notes or use voice input..."
               />
               <button
                 type="button"
                 onClick={() =>
-                  recordingField === "notes"
-                    ? stopRecording()
-                    : startRecording("notes")
+                  recordingField === 'notes' ? stopRecording() : startRecording('notes')
                 }
-                className="absolute right-2 bottom-2 p-1.5 rounded-full bg-green-600 hover:bg-green-700 text-white transition"
+                className="absolute right-2 bottom-2 p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition"
                 disabled={transcribingField !== null}
               >
-                {recordingField === "notes" ? (
-                  <Square size={16} />
-                ) : (
-                  <Mic size={16} />
-                )}
+                {recordingField === 'notes' ? <Square size={16} /> : <Mic size={16} />}
               </button>
             </div>
-            {recordingField === "notes" && (
-              <p className="text-sm text-red-500 animate-pulse">Recording...</p>
+            {recordingField === 'notes' && (
+              <p className="text-sm text-red-500 animate-pulse">Recording notes...</p>
             )}
-            {transcribingField === "notes" && (
-              <p className="text-sm text-green-500 animate-pulse">
-                Transcribing...
-              </p>
+            {transcribingField === 'notes' && (
+              <p className="text-sm text-blue-600 animate-pulse">Transcribing...</p>
             )}
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
             <label className="block text-sm text-gray-600">Language</label>
             <select
               value={languageCode}
               onChange={(e) => setLanguageCode(e.target.value)}
-              className="mt-1 px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-200"
+              className="mt-1 px-3 py-2 border rounded w-full"
             >
               {Object.keys(speechSynthesisLanguages).map((lang) => (
                 <option key={lang} value={lang}>
@@ -261,11 +253,9 @@ export default function AppointmentForm() {
                 </option>
               ))}
             </select>
-
             <Link
               href="/dashboard/staff"
-              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 mt-3
-              rounded-lg font-semibold transition block text-center"
+              className="block text-center mt-3 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition"
             >
               Go Back
             </Link>
@@ -274,7 +264,7 @@ export default function AppointmentForm() {
           <button
             type="submit"
             disabled={submitting}
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg text-lg font-semibold transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-lg font-semibold transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {submitting ? (
               <>
@@ -286,7 +276,7 @@ export default function AppointmentForm() {
             )}
           </button>
         </div>
-      </form>
+      </motion.form>
     </div>
   );
 }

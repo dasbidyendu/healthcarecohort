@@ -1,6 +1,9 @@
-"use client";
-import { useEffect, useState } from "react";
-import Link from "next/link";
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { Menu, X } from 'lucide-react';
 
 interface Patient {
   id: string;
@@ -26,7 +29,7 @@ interface Doctor {
     id: string;
     name: string;
     email: string;
-    role: "DOCTOR";
+    role: 'DOCTOR';
     createdAt: string;
   };
   hospital: {
@@ -34,36 +37,18 @@ interface Doctor {
     name: string;
     email: string;
   };
-  appointments: {
-    id: string;
-    date: string;
-    notes: string | null;
-    patient: {
-      id: string;
-      name: string;
-      age: number;
-      gender: string;
-    };
-  }[];
-  prescriptions: {
-    id: string;
-    content: string;
-    createdAt: string;
-    patient: {
-      id: string;
-      name: string;
-    };
-  }[];
+  appointments: Appointment[];
+  prescriptions: Prescription[];
 }
 
 export default function DoctorDashboard() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
-  const [selectedPrescription, setSelectedPrescription] =
-    useState<Prescription | null>(null);
+  const [selectedPrescription, setSelectedPrescription] = useState<Prescription | null>(null);
   const [showDoctorModal, setShowDoctorModal] = useState(false);
   const [doctor, setDoctor] = useState<Doctor | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -71,35 +56,25 @@ export default function DoctorDashboard() {
       fetch("/api/doctor/appointments"),
       fetch("/api/doctor/prescriptions"),
       fetch("/api/doctor/me"),
-    ])
-      .then(async ([pRes, aRes, prRes, dRes]) => {
-        const { patients } = await pRes.json();
-        const { appointments } = await aRes.json();
-        const { prescriptions } = await prRes.json();
-        const doctor = await dRes.json();
-        setPatients(patients);
-        setAppointments(appointments);
-        setPrescriptions(prescriptions);
-        setDoctor(doctor);
-      })
-      .catch(console.error);
+    ]).then(async ([pRes, aRes, prRes, dRes]) => {
+      const { patients } = await pRes.json();
+      const { appointments } = await aRes.json();
+      const { prescriptions } = await prRes.json();
+      const doctor = await dRes.json();
+      setPatients(patients);
+      setAppointments(appointments);
+      setPrescriptions(prescriptions);
+      setDoctor(doctor);
+    }).catch(console.error);
   }, []);
 
   const handlePrint = () => {
     if (!selectedPrescription) return;
     const printWindow = window.open("", "PRINT", "height=600,width=800");
     if (printWindow) {
-      printWindow.document.write(
-        `<html><head><title>Prescription</title></head><body>`
-      );
-      printWindow.document.write(
-        `<h1>Prescription for ${selectedPrescription.patient.name}</h1>`
-      );
-      printWindow.document.write(
-        `<p><strong>Date:</strong> ${new Date(
-          selectedPrescription.createdAt
-        ).toLocaleString()}</p>`
-      );
+      printWindow.document.write(`<html><head><title>Prescription</title></head><body>`);
+      printWindow.document.write(`<h1>Prescription for ${selectedPrescription.patient.name}</h1>`);
+      printWindow.document.write(`<p><strong>Date:</strong> ${new Date(selectedPrescription.createdAt).toLocaleString()}</p>`);
       printWindow.document.write(`<pre>${selectedPrescription.content}</pre>`);
       printWindow.document.write(`</body></html>`);
       printWindow.document.close();
@@ -110,120 +85,115 @@ export default function DoctorDashboard() {
   };
 
   return (
-    <div className="flex min-h-screen">
-      <aside className="w-64 bg-gray-900 text-white p-6 space-y-6">
-        <h2 className="text-xl font-bold">Doctor Panel</h2>
-        <nav className="space-y-4">
-          <Link
-            href="/dashboard/doctor/create-prescription"
-            className="block hover:underline"
-          >
-            📝 New Prescription
-          </Link>
+    <div className="flex min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
+      {/* Mobile Sidebar Toggle */}
+      {!sidebarOpen && (
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="fixed top-4 left-4 z-50 p-2 rounded-md bg-white/80 text-blue-700 shadow md:hidden"
+        >
+          <Menu />
+        </button>
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`fixed md:static z-40 w-64 h-screen bg-white/30 backdrop-blur-md text-blue-900 shadow-xl transform ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } transition-transform duration-300 md:translate-x-0 p-6 space-y-6`}
+      >
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold">DocSyne</h2>
           <button
-            onClick={() => setShowDoctorModal(true)}
-            className="mt-4 w-full text-left hover:underline"
+            onClick={() => setSidebarOpen(false)}
+            className="md:hidden text-xl text-red-500"
           >
-            👨‍⚕️ My Details
+            <X />
+          </button>
+        </div>
+
+        <nav className="space-y-4">
+          <Link href="/dashboard/doctor/create-prescription" className="block hover:underline">
+             New Prescription
+          </Link>
+          <button onClick={() => setShowDoctorModal(true)} className="block hover:underline">
+             My Details
           </button>
         </nav>
       </aside>
 
-      <main className="flex-1 p-6 space-y-8 bg-gray-50">
-        <section>
-          <h2 className="text-xl font-semibold mb-2">My Patients</h2>
-          <ul className="list-disc ml-5">
-            {patients.map((p) => (
-              <li key={p.id}>{p.name}</li>
-            ))}
-            {!patients.length && (
-              <p className="text-gray-500">No patients assigned.</p>
-            )}
+      {/* Main Content */}
+      <main className="flex-1 p-6 md:p-10 space-y-8">
+        {/* Patients */}
+        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <h2 className="text-2xl font-semibold mb-4 text-blue-800">My Patients</h2>
+          <ul className="list-disc ml-5 text-gray-700">
+            {patients.length ? patients.map(p => <li key={p.id}>{p.name}</li>) : <p>No patients assigned.</p>}
           </ul>
-        </section>
+        </motion.section>
 
-        <section>
-          <h2 className="text-xl font-semibold mb-2">Recent Appointments</h2>
-          <table className="w-full bg-white shadow rounded mb-4">
-            <thead className="bg-gray-100 text-sm">
-              <tr>
-                <th>Patient</th>
-                <th>Date</th>
-                <th>Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              {appointments.slice(0, 5).map((a) => (
-                <tr key={a.id} className="border-t text-sm">
-                  <td className="p-2">{a.patient.name}</td>
-                  <td className="p-2">{new Date(a.date).toLocaleString()}</td>
-                  <td className="p-2">{a.notes || "—"}</td>
-                </tr>
-              ))}
-              {!appointments.length && (
+        {/* Appointments */}
+        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+          <h2 className="text-2xl font-semibold mb-4 text-blue-800">Recent Appointments</h2>
+          <div className="overflow-x-auto bg-white shadow rounded-xl">
+            <table className="min-w-full text-sm">
+              <thead className="bg-blue-100 text-blue-800">
                 <tr>
-                  <td colSpan={3} className="p-4 text-center text-gray-500">
-                    No appointments.
-                  </td>
+                  <th className="px-4 py-2 text-left">Patient</th>
+                  <th className="px-4 py-2 text-left">Date</th>
+                  <th className="px-4 py-2 text-left">Notes</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </section>
+              </thead>
+              <tbody>
+                {appointments.length ? (
+                  appointments.slice(0, 5).map((a) => (
+                    <tr key={a.id} className="border-t">
+                      <td className="px-4 py-2">{a.patient.name}</td>
+                      <td className="px-4 py-2">{new Date(a.date).toLocaleString()}</td>
+                      <td className="px-4 py-2">{a.notes || '—'}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={3} className="text-center text-gray-500 py-6">
+                      No appointments yet.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </motion.section>
 
-        <section>
-          <h2 className="text-xl font-semibold mb-2">My Prescriptions</h2>
-          <ul className="space-y-2">
-            {prescriptions.map((pr) => (
+        {/* Prescriptions */}
+        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+          <h2 className="text-2xl font-semibold mb-4 text-blue-800">My Prescriptions</h2>
+          <ul className="space-y-3">
+            {prescriptions.map(pr => (
               <li
                 key={pr.id}
                 onClick={() => setSelectedPrescription(pr)}
-                className="bg-white p-3 rounded shadow cursor-pointer hover:bg-gray-100"
+                className="bg-white p-4 rounded shadow cursor-pointer hover:bg-blue-50"
               >
-                <p>
-                  <strong>Patient:</strong> {pr.patient.name}
-                </p>
-                <p>
-                  <strong>Date:</strong>{" "}
-                  {new Date(pr.createdAt).toLocaleString()}
-                </p>
+                <p><strong>Patient:</strong> {pr.patient.name}</p>
+                <p><strong>Date:</strong> {new Date(pr.createdAt).toLocaleString()}</p>
               </li>
             ))}
-            {!prescriptions.length && (
-              <p className="text-gray-500">No prescriptions created yet.</p>
-            )}
+            {!prescriptions.length && <p className="text-gray-500">No prescriptions created yet.</p>}
           </ul>
-        </section>
+        </motion.section>
 
-        {/* Prescription Detail Modal */}
+        {/* Prescription Modal */}
         {selectedPrescription && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded p-6 max-w-lg w-full shadow-lg relative">
-              <h3 className="text-xl font-bold mb-2">Prescription Details</h3>
-              <p>
-                <strong>Patient:</strong> {selectedPrescription.patient.name}
-              </p>
-              <p>
-                <strong>Date:</strong>{" "}
-                {new Date(selectedPrescription.createdAt).toLocaleString()}
-              </p>
-              <p className="mt-4 whitespace-pre-wrap">
-                <strong>Content:</strong> <br />
-                {selectedPrescription.content}
-              </p>
-              <div className="flex justify-end mt-6 gap-3">
-                <button
-                  onClick={handlePrint}
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                >
-                  🖨️ Print
-                </button>
-                <button
-                  onClick={() => setSelectedPrescription(null)}
-                  className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
-                >
-                  Close
-                </button>
+          <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
+            <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-lg">
+              <h3 className="text-xl font-bold mb-2">Prescription</h3>
+              <p><strong>Patient:</strong> {selectedPrescription.patient.name}</p>
+              <p><strong>Date:</strong> {new Date(selectedPrescription.createdAt).toLocaleString()}</p>
+              <pre className="mt-4 whitespace-pre-wrap bg-blue-50 p-3 rounded">{selectedPrescription.content}</pre>
+              <div className="flex justify-end mt-4 gap-4">
+                <button onClick={handlePrint} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">🖨 Print</button>
+                <button onClick={() => setSelectedPrescription(null)} className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Close</button>
               </div>
             </div>
           </div>
@@ -231,37 +201,16 @@ export default function DoctorDashboard() {
 
         {/* Doctor Info Modal */}
         {showDoctorModal && doctor && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded p-6 max-w-md w-full shadow-lg relative">
-              <h3 className="text-xl font-bold mb-4">Doctor Details</h3>
-
-              <p>
-                <strong>Name:</strong> {doctor.user.name}
-              </p>
-              <p>
-                <strong>Email:</strong> {doctor.user.email}
-              </p>
-              <p>
-                <strong>Specialization:</strong> {doctor.specialization}
-              </p>
-              <p>
-                <strong>Hospital:</strong> {doctor.hospital.name}
-              </p>
-              <p>
-                <strong>Role:</strong> {doctor.user.role}
-              </p>
-              <p>
-                <strong>Joined On:</strong>{" "}
-                {new Date(doctor.user.createdAt).toLocaleDateString()}
-              </p>
-
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
+              <h3 className="text-xl font-bold mb-3">Doctor Details</h3>
+              <p><strong>Name:</strong> {doctor.user.name}</p>
+              <p><strong>Email:</strong> {doctor.user.email}</p>
+              <p><strong>Specialization:</strong> {doctor.specialization}</p>
+              <p><strong>Hospital:</strong> {doctor.hospital.name}</p>
+              <p><strong>Joined:</strong> {new Date(doctor.user.createdAt).toLocaleDateString()}</p>
               <div className="flex justify-end mt-6">
-                <button
-                  onClick={() => setShowDoctorModal(false)}
-                  className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
-                >
-                  Close
-                </button>
+                <button onClick={() => setShowDoctorModal(false)} className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Close</button>
               </div>
             </div>
           </div>
