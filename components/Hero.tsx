@@ -2,8 +2,11 @@
 
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 export default function Hero() {
+    const router = useRouter();
+
   return (
     <section className="relative overflow-hidden">
       {/* Decorative BG Blobs */}
@@ -28,7 +31,7 @@ export default function Hero() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-center md:justify-start">
-            <button className="bg-blue-700 hover:bg-blue-800 text-white px-8 py-3 rounded-full font-semibold shadow-md transition duration-300 text-lg">
+            <button onClick={() => router.push('/signup')} className="bg-blue-700 hover:bg-blue-800 text-white px-8 py-3 rounded-full font-semibold shadow-md transition duration-300 text-lg">
               Register Your Hospital
             </button>
             <a href="#services" className="text-blue-700 font-semibold inline-flex items-center text-lg hover:underline">

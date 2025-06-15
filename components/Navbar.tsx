@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-scroll';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,6 +16,8 @@ export default function Navbar() {
     { id: 'about', label: 'About Us' },
     { id: 'contact', label: 'Contact' },
   ];
+
+  const route =  useRouter();
 
   return (
     <motion.nav
@@ -44,11 +48,11 @@ export default function Navbar() {
         </ul>
 
         {/* Desktop Navigation Buttons */}
-        <div className="hidden md:flex items-center gap-4">
+        <div  onClick={() => route.push('/login')}  className="hidden md:flex items-center gap-4">
           <button className="border border-[#1a5cff] text-[#1a5cff] px-5 py-2 rounded-full hover:bg-[#1a5cff]/10 transition">
             Login
           </button>
-          <button className="bg-[#1a5cff] text-white px-6 py-2.5 rounded-full hover:bg-[#1a5cff]/90 transition">
+          <button onClick={() => route.push('/signup')}  className="bg-[#1a5cff] text-white px-6 py-2.5 rounded-full hover:bg-[#1a5cff]/90 transition">
             Get Started
           </button>
         </div>        
@@ -83,10 +87,10 @@ export default function Navbar() {
             ))}
             {/* Mobile Menu Buttons */}
             <li>
-              <button className="w-full border border-[#1a5cff] text-[#1a5cff] py-2 rounded-full hover:bg-[#1a5cff]/10 transition mb-2">
+              <button onClick={() => route.push('/login')}  className="w-full border border-[#1a5cff] text-[#1a5cff] py-2 rounded-full hover:bg-[#1a5cff]/10 transition mb-2">
                 Login
               </button>
-              <button className="w-full bg-[#1a5cff] text-white py-2 rounded-full hover:bg-[#1a5cff]/90 transition">
+              <button onClick={() => route.push('/signup')} className="w-full bg-[#1a5cff] text-white py-2 rounded-full hover:bg-[#1a5cff]/90 transition">
                 Get Started
               </button>
             </li>
