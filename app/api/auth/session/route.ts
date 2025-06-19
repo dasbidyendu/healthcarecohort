@@ -16,6 +16,7 @@ export async function GET() {
     const payload = verifyToken(token); // ⬅️ You can use jsonwebtoken here
     return NextResponse.json({ user: payload });
   } catch (err) {
+    console.log('Token verification failed:', err);
     return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
   }
 }

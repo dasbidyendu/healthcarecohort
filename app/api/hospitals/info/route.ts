@@ -1,7 +1,7 @@
 // app/api/hospital/details/route.ts
-import { NextRequest, NextResponse } from 'next/server';
+import {  NextResponse } from 'next/server';
 import { getPrisma } from '@/lib/prisma';
-import { verifyToken, verifyTokenFromCookies } from '@/lib/auth';
+import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
 
 const prisma = getPrisma();

@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
     
     console.log("Prescriptions fetched:", prescriptions);
 
-    var existingPrescription:string = "";
+    let existingPrescription:string = "";
 
     for (const p of prescriptions) {
       console.log("Processing prescription:", p);
@@ -193,10 +193,10 @@ Make sure you dont miss any fields.
     };
 
     return NextResponse.json(parsed);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Gemini error:", err);
     return NextResponse.json(
-      { error: "Failed to generate prescription", details: err?.message },
+      { error: "Failed to generate prescription", details: err },
       { status: 500 }
     );
   }
