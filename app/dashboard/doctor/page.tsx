@@ -62,7 +62,7 @@ interface ParsedPrescription extends RawPrescription {
   parsedContent: PrescriptionContent | null;
 }
 
-export function formatPrescriptionContent(content: string): string {
+function formatPrescriptionContent(content: string): string {
   try {
     const data = JSON.parse(content);
 
