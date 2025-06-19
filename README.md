@@ -1,36 +1,134 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🏥 DocSyne – AI-Powered Healthcare Management System
 
-## Getting Started
+**DocSyne** is a next-gen developer platform for building secure, scalable healthcare applications with AI-driven insights, voice integration, and modular architecture. Designed using **Next.js**, **TypeScript**, and integrated with **Gemini AI**, it simplifies complex healthcare workflows for doctors, hospitals, and patients.
 
-First, run the development server:
+<p align="center">
+  <img src="./app/favicon.ico" alt="DocSyne Logo" height="120" />
+</p>
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Why DocSyne?
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+DocSyne transforms healthcare data management with AI automation, secure access control, and intuitive interfaces.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 🌟 Core Features
 
-## Learn More
+* 🔐 **Role-Based Security**: Secure access for hospital staff, doctors, and administrators.
+* 🎙️ **Voice-Enabled Data Entry**: Speech-to-text transcription for registration and prescriptions.
+* 🤖 **AI-Driven Insights**: Automatically generates diagnoses and prescriptions with Gemini.
+* 🧹 **Modular Components**: Reusable UI + backend modules to speed up development.
+* 🔄 **Seamless API Integration**: Real-time data flow for appointments, hospital info, and user management.
+* 📊 **MCP Dashboard**: Control panel for hospital-wide data visualization and operations.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🧠 Tech Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+* 👨‍💻 **Frontend**: Next.js + TypeScript
+* 🔐 **Authentication**: JSON Web Tokens
+* 📂 **Database**: PostgreSQL via Supabase
+* ⚙️ **ORM**: Prisma
+* 🧠 **AI Integration**: Gemini API (Google Generative AI)
+* 🧵 **MCP**: Medical Control Panel for real-time analytics
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🛠️ Getting Started
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 📦 Prerequisites
+
+* **Programming Language**: TypeScript
+* **Package Manager**: npm
+
+### 📅 Installation
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/dasbidyendu/healthcarecohort
+   ```
+
+2. **Navigate to the project directory**
+
+   ```bash
+   cd healthcarecohort
+   ```
+
+3. **Install dependencies**
+
+   ```bash
+   npm install
+   ```
+
+4. **Run the development server**
+
+   ```bash
+   npm run dev
+   ```
+
+5. **Visit your app**
+
+   ```
+   http://localhost:3000
+   ```
+
+---
+
+## 🧑‍🔬 Contributing
+
+We welcome contributions from developers of all experience levels! Here’s how to get involved:
+
+1. **Fork the repository**
+2. **Create a new branch**
+
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+3. **Make your changes**
+4. **Commit your changes**
+
+   ```bash
+   git commit -m "Add your message"
+   ```
+5. **Push to your branch**
+
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+6. **Create a Pull Request** – we’ll review and merge!
+
+### 💡 Good First Contributions
+
+* Improve component modularity
+* Add loading states & error handling
+* Write unit tests for routes or components
+* Enhance voice transcription accuracy
+
+---
+
+## 📷 Screenshots
+
+<p align="center">
+  <img src="/mnt/data/95014f5b-8e2b-42a9-a13e-1a6954bd552c.png" alt="Features Overview" width="800" />
+</p>
+
+<p align="center">
+  <img src="/mnt/data/e1b236a1-6990-4eb7-8c01-d98ab783545c.png" alt="Getting Started" width="800" />
+</p>
+
+---
+
+## 📜 License
+
+MIT License © [dasbidyendu](https://github.com/dasbidyendu)
+
+---
+
+## 💬 Feedback & Support
+
+Found a bug? Have a feature request? Open an [issue](https://github.com/dasbidyendu/healthcarecohort/issues) or start a discussion!
+
+---
+
+> **DocSyne** – Healing code, saving time.
