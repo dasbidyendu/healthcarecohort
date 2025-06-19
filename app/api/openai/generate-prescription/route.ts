@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const preresponse = await fetch(`http://localhost:3000/api/doctor/prescriptions`, {
+    const preresponse = await fetch(`https://docsyne.vercel.app/api/doctor/prescriptions`, {
       method: 'GET',
       headers: {
     cookie: req.headers.get("cookie") || "",
