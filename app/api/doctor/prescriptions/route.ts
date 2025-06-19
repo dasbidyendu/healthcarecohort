@@ -16,5 +16,6 @@ export async function GET(req: NextRequest) {
     include: { patient: true },
     orderBy: { createdAt: "desc" },
   });
+  console.log("Prescriptions fetched for doctor:", prescriptions);
   return NextResponse.json({ prescriptions });
 }

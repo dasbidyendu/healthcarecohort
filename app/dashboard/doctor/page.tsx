@@ -166,23 +166,65 @@ export default function DoctorDashboard() {
 
   const handlePrint = () => {
     if (!selectedPrescription) return;
+
     const printWindow = window.open("", "PRINT", "height=600,width=800");
     if (printWindow) {
-      printWindow.document.write(
-        `<html><head><title>Prescription</title></head><body>`
-      );
-      printWindow.document.write(
-        `<h1>Prescription for ${selectedPrescription.patient.name}</h1>`
-      );
-      printWindow.document.write(
-        `<p><strong>Date:</strong> ${new Date(
-          selectedPrescription.createdAt
-        ).toLocaleString()}</p>`
-      );
-      printWindow.document.write(
-        `<pre>${formatPrescriptionContent(selectedPrescription.content)}</pre>`
-      );
-      printWindow.document.write(`</body></html>`);
+      const { patient, createdAt, content } = selectedPrescription;
+      const formattedContent = formatPrescriptionContent(content);
+
+      const html = `
+      <html>
+        <head>
+          <title>Prescription for ${patient.name}</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              padding: 20px;
+              line-height: 1.6;
+              color: #333;
+            }
+            h1, h2 {
+              text-align: center;
+              margin-bottom: 20px;
+            }
+            .info {
+              margin-bottom: 20px;
+            }
+            .info p {
+              margin: 4px 0;
+            }
+            .section-title {
+              font-weight: bold;
+              margin-top: 20px;
+              text-decoration: underline;
+            }
+            pre {
+              background: #f4f4f4;
+              padding: 15px;
+              border-radius: 8px;
+              white-space: pre-wrap;
+              word-wrap: break-word;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Medical Prescription</h1>
+          <div class="info">
+            <p><strong>Patient Name:</strong> ${patient.name}</p>
+            
+            <p><strong>Date:</strong> ${new Date(
+              createdAt
+            ).toLocaleString()}</p>
+          </div>
+          <div>
+            <p class="section-title">Prescription Details:</p>
+            <pre>${formattedContent}</pre>
+          </div>
+        </body>
+      </html>
+    `;
+
+      printWindow.document.write(html);
       printWindow.document.close();
       printWindow.focus();
       printWindow.print();

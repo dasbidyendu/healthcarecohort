@@ -89,6 +89,25 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const preresponse = await fetch(`http://localhost:3000/api/doctor/prescriptions`, {
+      method: 'GET',
+      headers: {
+    cookie: req.headers.get("cookie") || "",
+  },
+    });
+    
+    const prescriptionsData = await preresponse.json();
+    const prescriptions = prescriptionsData.prescriptions || [];
+    
+    console.log("Prescriptions fetched:", prescriptions);
+
+    var existingPrescription:string = "";
+
+    for (const p of prescriptions) {
+      console.log("Processing prescription:", p);
+      existingPrescription += p.content;
+    }
+    console.log("Existing prescription content:", existingPrescription);
     // Step 1: Find real patient from database (by name and hospital)
     const patient = await prisma.patient.findFirst({
       where: {
@@ -119,17 +138,23 @@ export async function POST(req: NextRequest) {
             {
               text: `
 You are a professional medical assistant. A patient presents the following symptoms: "${symptoms}".
-
+Your previous prescriptions are: "${existingPrescription}".
+keep in mind that you are generating a prescription for a real patient, so ensure the details are accurate and professional.
+if there are any previous brands of medicines mentioned in the previous prescriptions, keep them in mind.
+You dont have to use the medicine names from the previous prescriptions, but you can use them if they are relevant.
 Your task is to call the function **generateMedicalReport** and provide:
 - A brief medical **analysis** of the symptoms.
 - A structured **prescription** that includes:
   - Fictional patient details (we will override them).
   - A medical **diagnosis**.
-  - A list of **medicines** with their dosage and frequency.
+  - A list of **medicines** with their brand , dosage and frequency.
   - Clear **instructions** for the patient.
   - A recommended **follow-up** plan.
 
 Only return a function call to **generateMedicalReport** with no natural language text.
+Make sure you dont miss any fields.
+
+
 `,
             },
           ],
