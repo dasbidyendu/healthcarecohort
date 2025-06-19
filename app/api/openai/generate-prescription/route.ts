@@ -1,7 +1,6 @@
 import {
   GoogleGenerativeAI,
   GenerativeModel,
-  Part,
   FunctionDeclaration,
   Schema,
 } from "@google/generative-ai";
