@@ -17,6 +17,7 @@
     "@types/bcrypt": "^5.0.2",
     "@types/formidable": "^3.4.5",
     "@types/jsonwebtoken": "^9.0.9",
+    "@types/react-scroll": "^1.8.10",
     "assemblyai": "^4.13.2",
     "bcrypt": "^6.0.0",
     "cookie": "^1.0.2",
